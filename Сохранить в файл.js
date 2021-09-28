@@ -1,3 +1,6 @@
+const FS = require('fs'),
+    PATH = require('path');
+
 const clog = console.log.bind(console),
     wlog = console.warn.bind(console),
     elog = console.error.bind(console);
@@ -31,6 +34,13 @@ const Reader = (function () {
                     depth: obj.Depth
                 };
                 objData.position = this.getPos(obj);
+                objData.rotation = {
+                    x: obj.Rotation.x,
+                    y: obj.Rotation.y,
+                    z: obj.Rotation.z
+                };
+
+
             } else if (obj instanceof TFurnPanel) {
                 objData.type = 'TFurnPanel';
                 objData.name = obj.Name;
@@ -40,15 +50,26 @@ const Reader = (function () {
                     depth: obj.Thickness
                 };
                 objData.position = this.getPos(obj);
+
+                objData.rotation = this.getRotation(obj.Rotation);
             } else if (obj instanceof TFurnBlock) {
+                //CalculateGabarits
+                //ElasticResize
+                //GSize
+                //GMin
+                //GMax
+
                 objData.type = 'TFurnBlock';
                 objData.name = obj.Name;
                 objData.size = {
-                    width: obj.Width,
-                    height: obj.Height,
-                    depth: obj.Depth
+                    width: obj.GSize.x,
+                    height: obj.GSize.y,
+                    depth: obj.GSize.z
                 };
                 objData.position = this.getPos(obj);
+
+                objData.rotation = this.getRotation(obj.Rotation)
+
                 objData.children = this.read(obj);
 
                 objData.elastic = {
@@ -59,6 +80,7 @@ const Reader = (function () {
 
                 //read elastic planes
                 if (objData.elastic.isElastic) {
+
 
                     const elasticNode = obj.ParamSectionNode('Elastic');
 
@@ -133,6 +155,14 @@ const Reader = (function () {
             x: obj.PositionX,
             y: obj.PositionY,
             z: obj.PositionZ
+        };
+    };
+
+    Reader.prototype.getRotation = function (rotation) {
+        return {
+            x: Math.round(Math.asin(rotation.ImagPart.x) * 2 / (Math.PI / 180)),
+            y: Math.round(Math.asin(rotation.ImagPart.y) * 2 / (Math.PI / 180)),
+            z: Math.round(Math.asin(rotation.ImagPart.z) * 2 / (Math.PI / 180))
         };
     };
 

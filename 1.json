@@ -1,0 +1,126 @@
+{
+  "name": "Model",
+  "tree": [
+    {
+      "type": "TModelLimits",
+      "size": {
+        "width": "200",
+        "height": "300",
+        "depth": "100"
+      },
+      "position": {
+        "x": "0",
+        "y": "0",
+        "z": "0"
+      }
+    },
+    {
+      "type": "TFurnBlock",
+      "name": "Фрагмент7",
+      "size": {},
+      "position": {
+        "x": "0",
+        "y": "0",
+        "z": "0"
+      },
+      "children": [
+        {
+          "type": "TModelLimits",
+          "size": {
+            "width": "1000",
+            "height": "600",
+            "depth": "400"
+          },
+          "position": {
+            "x": "0",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        {
+          "type": "TFurnPanel",
+          "name": "Вертикальная",
+          "size": {
+            "width": "400",
+            "height": "583.9999999999998",
+            "depth": "16"
+          },
+          "position": {
+            "x": "16",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        {
+          "type": "TFurnPanel",
+          "name": "Вертикальная",
+          "size": {
+            "width": "400",
+            "height": "583.9999999999998",
+            "depth": "16"
+          },
+          "position": {
+            "x": "999.9999999999999",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        {
+          "type": "TFurnPanel",
+          "name": "Горизонтальная",
+          "size": {
+            "width": "1000",
+            "height": "400",
+            "depth": "16"
+          },
+          "position": {
+            "x": "0",
+            "y": "583.9999999999998",
+            "z": "400"
+          }
+        },
+        {
+          "type": "TFurnPanel",
+          "name": "Фронтальная",
+          "size": {
+            "width": "967.9999999999999",
+            "height": "100",
+            "depth": "16"
+          },
+          "position": {
+            "x": "16.000000000000114",
+            "y": "483.9999999999998",
+            "z": "384"
+          }
+        }
+      ],
+      "elastic": {
+        "isElastic": "true",
+        "constraints": {
+          "min": {
+            "x": "200",
+            "y": "100",
+            "z": "50"
+          },
+          "max": {
+            "x": "1600",
+            "y": "1200",
+            "z": "800"
+          },
+          "step": {
+            "x": "0",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        "planes": [
+          {
+            "axis": "0",
+            "pos": "491.0555913078922",
+            "weight": "1"
+          }
+        ]
+      }
+    }
+  ]
+}
