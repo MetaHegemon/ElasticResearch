@@ -15,7 +15,7 @@ const Reader = (function () {
         for (let i = 0; i < node.Count; i++) {
             if (!(node[i] instanceof TFastener)) {
                 if (node[i].List) {
-                    result = this.gatherAllHoles(node[i], result);
+                    result = this.gatherAllFasteners(node[i], result);
                 }
                 continue;
             }
@@ -24,17 +24,47 @@ const Reader = (function () {
                 name: node[i].Name,
                 artPos: node[i].ArtPos,
                 position: node[i].ToGlobal(node[i].Position),
-                rotation: node[i].Rotation.ImagPart
+                rotation: {
+                    x: node[i].Rotation.ImagPart.x,
+                    y: node[i].Rotation.ImagPart.y,
+                    z: node[i].Rotation.ImagPart.z,
+                    w: node[i].Rotation.RealPart,
+                }
             });
         }
 
         return result;
     };
 
+
     Reader.prototype.gatherAllHoles = function (node, result) {
+        /* inside hole:
+                Tag
+                Optional
+                DrillMode
+                Depth
+                Contour
+                Diameter
+                Radius
+                Direction
+                Position
+                TransformMatrix
+                Transform
+                SaveTo
+                LoadFrom
+                SaveToXml
+                LoadFromXml
+                SaveToXBS
+                LoadFromXBS
+                Assign
+                CompareHole
+                EndPosition
+                RayIntersect
+        */
+
         for (let i = 0; i < node.Count; i++) {
             let isFurniture = false;
-            //по завершению скрипта заменить проверку ниже на более изящное TFastener и проверить как будет работать
+
             for (let key in node[i]) {
                 if (key === 'Holes') {
                     isFurniture = true;
@@ -49,7 +79,6 @@ const Reader = (function () {
             }
             for (let j = 0; j < node[i].Holes.Count; j += 1) {
                 const hole = node[i].Holes[j];
-                clog(node[i].Count);
                 result.push(
                     {
                         position: node[i].ToGlobal(hole.Position),
@@ -67,7 +96,6 @@ const Reader = (function () {
 
     Reader.prototype.run = function (object) {
         this.allFasteners = this.gatherAllFasteners(object, []);
-        clog(this.allFasteners.length);
         this.allHoles = this.gatherAllHoles(object, []);
 
         this.data = {
@@ -173,11 +201,7 @@ const Reader = (function () {
                     depth: obj.Depth
                 };
                 objData.position = this.getPos(obj);
-                objData.rotation = {
-                    x: obj.Rotation.x,
-                    y: obj.Rotation.y,
-                    z: obj.Rotation.z
-                };
+                objData.rotation = this.getRotation(obj.Rotation);
             }
             else if (obj instanceof TFurnPanel) {
                 objData = {};
@@ -449,13 +473,6 @@ const Reader = (function () {
     };
 
     Reader.prototype.getPos = function (obj) {
-        /*const pos = obj.ToGlobal(obj.Position);
-        return {
-            x: pos.x,
-            y: pos.y,
-            z: pos.z
-        };*/
-
         return {
             x: obj.PositionX,
             y: obj.PositionY,
@@ -465,9 +482,10 @@ const Reader = (function () {
 
     Reader.prototype.getRotation = function (rotation) {
         return {
-            x: Math.round(Math.asin(rotation.ImagPart.x) * 2 / (Math.PI / 180)),
-            y: Math.round(Math.asin(rotation.ImagPart.y) * 2 / (Math.PI / 180)),
-            z: Math.round(Math.asin(rotation.ImagPart.z) * 2 / (Math.PI / 180))
+            x: rotation.ImagPart.x,
+            y: rotation.ImagPart.y,
+            z: rotation.ImagPart.z,
+            w: rotation.RealPart
         };
     };
 
