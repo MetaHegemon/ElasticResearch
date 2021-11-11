@@ -5,6 +5,17 @@ const clog = console.log.bind(console),
     wlog = console.warn.bind(console),
     elog = console.error.bind(console);
 
+/*
+Bazis information:
+TextureOrientation: 2-vertical, 1 - horizontal, 0 - no matter
+indexes:
+        1
+   |---------|
+ 3 | F4  B5  | 2
+   |---------|
+        0
+*/
+
 const Reader = (function () {
     function Reader() {
         this.data = {};
@@ -23,7 +34,7 @@ const Reader = (function () {
             result.push({
                 name: node[i].Name,
                 artPos: node[i].ArtPos,
-                position: node[i].ToGlobal(node[i].Position),
+                position: node[i].Owner.ToGlobal(node[i].Position),
                 rotation: {
                     x: node[i].Rotation.ImagPart.x,
                     y: node[i].Rotation.ImagPart.y,
@@ -212,10 +223,14 @@ const Reader = (function () {
                     height: obj.ContourHeight,
                     depth: obj.Thickness
                 };
+                objData.textureOrientation = obj.TextureOrientation === 1 ? 'horizontal' : obj.TextureOrientation === 2 ? 'vertical' : 'nomatter';
                 objData.position = this.getPos(obj);
-                //objData.holes = this.getHolesFromPanel(this.allHoles, obj);
-
                 objData.rotation = this.getRotation(obj.Rotation);
+                objData.edgeLeft = this.getEdge('left', obj);
+                objData.edgeRight = this.getEdge('right', obj);
+                objData.edgeTop = this.getEdge('top', obj);
+                objData.edgeBottom = this.getEdge('bottom', obj);
+
             }
             else if (obj instanceof TFurnBlock) {
                 objData = {};
@@ -487,6 +502,58 @@ const Reader = (function () {
             z: rotation.ImagPart.z,
             w: rotation.RealPart
         };
+    };
+
+    Reader.prototype.getEdge = function (type, panel) {
+        let butt = null;
+        const buttData = {
+            id: null,
+            name: null,
+            thickness: null,
+            width: null,
+            clipPanel: null
+        };
+
+        /* if (panel.TextureOrientation === 1) {
+             if (type === 'bottom') {
+                 butt = this.getButtByElemIndex(panel.Butts, 1);
+             } else if (type === 'top') {
+                 butt = this.getButtByElemIndex(panel.Butts, 3);
+             } else if (type === 'left') {
+                 butt = this.getButtByElemIndex(panel.Butts, 0);
+             } else if (type === 'right') {
+                 butt = this.getButtByElemIndex(panel.Butts, 2);
+             }
+         } else {*/
+        if (type === 'bottom') {
+            butt = this.getButtByElemIndex(panel.Butts, 0);
+        } else if (type === 'top') {
+            butt = this.getButtByElemIndex(panel.Butts, 2);
+        } else if (type === 'left') {
+            butt = this.getButtByElemIndex(panel.Butts, 3);
+        } else if (type === 'right') {
+            butt = this.getButtByElemIndex(panel.Butts, 1);
+        }
+        //}
+        if (!butt) return buttData;
+        buttData.id = 0;
+        buttData.name = butt.Sign;
+        buttData.thickness = butt.Thickness;
+        buttData.width = butt.Width;
+        buttData.clipPanel = butt.ClipPanel;
+
+        return buttData;
+    };
+
+    Reader.prototype.getButtByElemIndex = function (butts, elemIndex) {
+        let butt = 0;
+        for (let i = 0; i < butts.Count; i += 1) {
+            if (butts[i].ElemIndex === elemIndex) {
+                butt = butts[i];
+                break;
+            }
+        }
+        return butt;
     };
 
     return new Reader();
