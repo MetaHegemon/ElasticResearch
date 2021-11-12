@@ -226,11 +226,15 @@ const Reader = (function () {
                 objData.textureOrientation = obj.TextureOrientation === 1 ? 'horizontal' : obj.TextureOrientation === 2 ? 'vertical' : 'nomatter';
                 objData.position = this.getPos(obj);
                 objData.rotation = this.getRotation(obj.Rotation);
-                objData.edgeLeft = this.getEdge('left', obj);
-                objData.edgeRight = this.getEdge('right', obj);
-                objData.edgeTop = this.getEdge('top', obj);
-                objData.edgeBottom = this.getEdge('bottom', obj);
 
+                const buttTop = this.getButt('top', obj);
+                if (buttTop) objData.buttTop = buttTop;
+                const buttLeft = this.getButt('left', obj);
+                if (buttLeft) objData.buttLeft = this.getButt('left', obj);
+                const buttBottom = this.getButt('bottom', obj);
+                if (buttBottom) objData.buttBottom = this.getButt('bottom', obj);
+                const buttRight = this.getButt('right', obj);
+                if (buttRight) objData.buttRight = this.getButt('right', obj);
             }
             else if (obj instanceof TFurnBlock) {
                 objData = {};
@@ -504,10 +508,9 @@ const Reader = (function () {
         };
     };
 
-    Reader.prototype.getEdge = function (type, panel) {
+    Reader.prototype.getButt = function (side, panel) {
         let butt = null;
         const buttData = {
-            id: null,
             name: null,
             thickness: null,
             width: null,
@@ -525,18 +528,17 @@ const Reader = (function () {
                  butt = this.getButtByElemIndex(panel.Butts, 2);
              }
          } else {*/
-        if (type === 'bottom') {
+        if (side === 'bottom') {
             butt = this.getButtByElemIndex(panel.Butts, 0);
-        } else if (type === 'top') {
+        } else if (side === 'top') {
             butt = this.getButtByElemIndex(panel.Butts, 2);
-        } else if (type === 'left') {
+        } else if (side === 'left') {
             butt = this.getButtByElemIndex(panel.Butts, 3);
-        } else if (type === 'right') {
+        } else if (side === 'right') {
             butt = this.getButtByElemIndex(panel.Butts, 1);
         }
         //}
-        if (!butt) return buttData;
-        buttData.id = 0;
+        if (!butt) return null;
         buttData.name = butt.Sign;
         buttData.thickness = butt.Thickness;
         buttData.width = butt.Width;
