@@ -16,13 +16,13 @@ indexes:
         0
 */
 
-const Reader = (function () {
-    function Reader() {
+class Reader {
+    constructor() {
         this.data = {};
         this.allHoles = [];
     }
 
-    Reader.prototype.gatherAllFasteners = function (node, result) {
+    gatherAllFasteners(node, result) {
         for (let i = 0; i < node.Count; i++) {
             if (!(node[i] instanceof TFastener)) {
                 if (node[i].List) {
@@ -45,10 +45,10 @@ const Reader = (function () {
         }
 
         return result;
-    };
+    }
 
 
-    Reader.prototype.gatherAllHoles = function (node, result) {
+    gatherAllHoles(node, result) {
         /* inside hole:
                 Tag
                 Optional
@@ -103,9 +103,9 @@ const Reader = (function () {
         }
 
         return result;
-    };
+    }
 
-    Reader.prototype.run = function (object) {
+    run(object) {
         this.allFasteners = this.gatherAllFasteners(object, []);
         this.allHoles = this.gatherAllHoles(object, []);
 
@@ -119,18 +119,18 @@ const Reader = (function () {
         };
 
         return this.data;
-    };
+    }
 
     /**
      * Находит размеры модуля.
      * @returns {object}
      */
-    Reader.prototype.getModuleSize = function (object) {
+    getModuleSize(object) {
         const size = { width: object.GSize.x, height: object.GSize.y, depth: object.GSize.z };
         return size;
-    };
+    }
 
-    Reader.prototype.getElasticParams = function (object) {
+    getElasticParams(object) {
         const elasticData = {
             isElastic: object.IsElastic(),
             constraints: {},
@@ -163,9 +163,9 @@ const Reader = (function () {
         }
 
         return elasticData;
-    };
+    }
 
-    Reader.prototype.readElasticPlanes = function (elasticNode) {
+    readElasticPlanes(elasticNode) {
         const planes = [];
         const planesNode = elasticNode.FindOrCreate('Planes');
 
@@ -195,26 +195,15 @@ const Reader = (function () {
         }
 
         return planes;
-    };
+    }
 
-    Reader.prototype.read = function (object) {
+    read(object) {
         const result = [];
         for (let i = 0; i < object.Count; i += 1) {
             let objData;
             const obj = object[i];
 
-            if (obj instanceof TModelLimits) {
-                objData = {};
-                objData.type = 'TModelLimits';
-                objData.size = {
-                    width: obj.Width,
-                    height: obj.Height,
-                    depth: obj.Depth
-                };
-                objData.position = this.getPos(obj);
-                objData.rotation = this.getRotation(obj.Rotation);
-            }
-            else if (obj instanceof TFurnPanel) {
+            if (obj instanceof TFurnPanel) {
                 objData = {};
                 objData.type = 'TFurnPanel';
                 objData.name = obj.Name;
@@ -223,6 +212,7 @@ const Reader = (function () {
                     height: obj.ContourHeight,
                     depth: obj.Thickness
                 };
+                objData.material = this.getMaterial(obj.MaterialName);
                 objData.textureOrientation = obj.TextureOrientation === 1 ? 'horizontal' : obj.TextureOrientation === 2 ? 'vertical' : 'nomatter';
                 objData.position = this.getPos(obj);
                 objData.rotation = this.getRotation(obj.Rotation);
@@ -255,9 +245,35 @@ const Reader = (function () {
             if (objData) result.push(objData);
         }
         return result;
-    };
+    }
 
-    Reader.prototype.getHolesFromPanel = function (holes, panel) {
+    getMaterial(materialName) {
+        return result = {
+            name: this.getNameFromStr(materialName),
+            art: this.getArticleFromStr(materialName)
+        }
+    }
+
+    getArticleFromStr(str) {
+        var pos = str.indexOf('\r');
+        if (pos === -1) {
+            return '';
+        } else {
+            return str.substring(pos + 1);
+        }
+    }
+
+    getNameFromStr(str) {
+        var pos = str.indexOf('\r');
+
+        if (pos === -1) {
+            return str;
+        } else {
+            return str.substring(0, pos);
+        }
+    }
+
+    getHolesFromPanel(holes, panel) {
         const MM = this.getMinMax(panel);
         const bores = [];
 
@@ -353,9 +369,9 @@ const Reader = (function () {
         }
 
         return bores;
-    };
+    }
 
-    Reader.prototype.getMinMax = function (node) {
+    getMinMax(node) {
         let minX = 1000000;
         let minY = 1000000;
         let maxX = -1000000;
@@ -420,21 +436,21 @@ const Reader = (function () {
             maxX: maxX,
             maxY: maxY
         };
-    };
+    }
 
-    Reader.prototype.isEqualFloat = function (v1, v2) {
+    isEqualFloat(v1, v2) {
         return Math.abs(v1 - v2) < 0.001;
-    };
+    }
 
-    Reader.prototype.rnd2 = function (val) {
+    rnd2(val) {
         let result = parseFloat(val.toFixed(2));
         if (result == -0) {
             result = 0;
         }
         return result;
-    };
+    }
 
-    Reader.prototype.isPointInsidePanel = function (point, panel) {
+    isPointInsidePanel(point, panel) {
         const cMin = panel.ToGlobal({ x: panel.Contour.Min.x, y: panel.Contour.Min.y });
         const cMax = panel.ToGlobal({ x: panel.Contour.Max.x, y: panel.Contour.Max.y });
         cMin.x = Math.round(cMin.x);
@@ -481,41 +497,36 @@ const Reader = (function () {
         }
 
         return res;
-    };
+    }
 
-    Reader.prototype.getSizes = function (obj) {
+    getSizes(obj) {
         return {
             width: obj.ContourWidth,
             height: obj.ContourHeight,
             depth: obj.Thickness
         };
-    };
+    }
 
-    Reader.prototype.getPos = function (obj) {
+    getPos(obj) {
         return {
             x: obj.PositionX,
             y: obj.PositionY,
             z: obj.PositionZ
         };
-    };
+    }
 
-    Reader.prototype.getRotation = function (rotation) {
+    getRotation(rotation) {
         return {
             x: rotation.ImagPart.x,
             y: rotation.ImagPart.y,
             z: rotation.ImagPart.z,
             w: rotation.RealPart
         };
-    };
+    }
 
-    Reader.prototype.getButt = function (side, panel) {
+    getButt(side, panel) {
         let butt = null;
-        const buttData = {
-            name: null,
-            thickness: null,
-            width: null,
-            clipPanel: null
-        };
+
 
         /* if (panel.TextureOrientation === 1) {
              if (type === 'bottom') {
@@ -539,15 +550,19 @@ const Reader = (function () {
         }
         //}
         if (!butt) return null;
-        buttData.name = butt.Sign;
-        buttData.thickness = butt.Thickness;
-        buttData.width = butt.Width;
-        buttData.clipPanel = butt.ClipPanel;
+
+        const buttData = {
+            sign: butt.Sign,
+            name: this.getNameFromStr(butt.Material),
+            art: this.getArticleFromStr(butt.Material),
+            thickness: butt.Thickness,
+            clipPanel: butt.ClipPanel
+        };
 
         return buttData;
-    };
+    }
 
-    Reader.prototype.getButtByElemIndex = function (butts, elemIndex) {
+    getButtByElemIndex(butts, elemIndex) {
         let butt = 0;
         for (let i = 0; i < butts.Count; i += 1) {
             if (butts[i].ElemIndex === elemIndex) {
@@ -556,10 +571,8 @@ const Reader = (function () {
             }
         }
         return butt;
-    };
-
-    return new Reader();
-})();
+    }
+}
 
 const Saver = (function () {
     function Saver() {
@@ -593,6 +606,6 @@ const Saver = (function () {
     return new Saver();
 })();
 
-const data = Reader.run(Model);
+const data = new Reader().run(Model);
 
 Saver.save(data);
