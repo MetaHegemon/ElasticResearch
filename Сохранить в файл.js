@@ -133,7 +133,23 @@ class Reader {
     getElasticParams(object) {
         const elasticData = {
             isElastic: object.IsElastic(),
-            constraints: {},
+            constraints: {
+                min: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                max: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                step: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }
+            },
             planes: []
         };
         //read elastic planes
@@ -248,10 +264,10 @@ class Reader {
     }
 
     getMaterial(materialName) {
-        return result = {
+        return {
             name: this.getNameFromStr(materialName),
             art: this.getArticleFromStr(materialName)
-        }
+        };
     }
 
     getArticleFromStr(str) {
@@ -525,6 +541,14 @@ class Reader {
     }
 
     getButt(side, panel) {
+        const result = {
+            sign: '',
+            name: '',
+            art: '',
+            thickness: 0,
+            clipPanel: false
+        }
+
         let butt = null;
 
 
@@ -549,17 +573,17 @@ class Reader {
             butt = this.getButtByElemIndex(panel.Butts, 1);
         }
         //}
-        if (!butt) return null;
 
-        const buttData = {
-            sign: butt.Sign,
-            name: this.getNameFromStr(butt.Material),
-            art: this.getArticleFromStr(butt.Material),
-            thickness: butt.Thickness,
-            clipPanel: butt.ClipPanel
-        };
 
-        return buttData;
+        if (butt) {
+            result.sign = butt.Sign;
+            result.name = this.getNameFromStr(butt.Material);
+            result.art = this.getArticleFromStr(butt.Material);
+            result.thickness = butt.Thickness;
+            result.clipPanel = butt.ClipPanel;
+        }
+
+        return result;
     }
 
     getButtByElemIndex(butts, elemIndex) {
